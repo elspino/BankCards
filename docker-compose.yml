@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:16
+    container_name: bankcards-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-postgres}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bankcards-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bankcards-app
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-postgres}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_TOKEN: ${JWT_TOKEN:-38YFtAMnSCdEFGNFs9JR5oIKUbOTj3VsRMs5Uvl6uyEJ}
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    networks:
+      - bankcards-net
+
+volumes:
+  postgres-data:
+
+networks:
+  bankcards-net:
+    driver: bridge
